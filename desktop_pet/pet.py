@@ -1,6 +1,9 @@
 """Windows 11 Desktop Pet - a simple smiley face that lives on your desktop."""
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow
+from PyQt5.QtWidgets import (
+    QApplication, QWidget, QMainWindow,
+    QSystemTrayIcon, QMenu, QAction,
+)
 from PyQt5.QtGui import QPainter, QColor, QPen, QBrush
 from PyQt5.QtCore import Qt, QPoint, QRectF
 
@@ -93,3 +96,29 @@ class PetWindow(QMainWindow):
     def mouseReleaseEvent(self, event):
         self._drag_pos = None
         event.accept()
+
+
+def main():
+    app = QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(False)
+
+    window = PetWindow()
+    window.show()
+
+    # System tray
+    tray = QSystemTrayIcon(window)
+    # Use a standard icon as fallback
+    tray.setIcon(app.style().standardIcon(app.style().SP_ComputerIcon))
+
+    tray_menu = QMenu()
+    exit_action = QAction("退出", tray_menu)
+    exit_action.triggered.connect(app.quit)
+    tray_menu.addAction(exit_action)
+    tray.setContextMenu(tray_menu)
+    tray.show()
+
+    sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()
