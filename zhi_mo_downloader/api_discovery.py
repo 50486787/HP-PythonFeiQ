@@ -25,8 +25,15 @@ def discover_apis():
 
         def log_request(request):
             url = request.url
-            if "api.znzmo.com" in url:
-                captured.append({"method": request.method, "url": url})
+            # 跳过明显的静态资源
+            skip_ext = (".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico", ".css", ".woff", ".woff2", ".ttf", ".eot")
+            if any(url.endswith(ext) for ext in skip_ext):
+                return
+            captured.append({
+                "method": request.method,
+                "url": url,
+                "type": request.resource_type,
+            })
 
         page.on("request", log_request)
 
@@ -37,7 +44,18 @@ def discover_apis():
         print("操作完成后按 Enter 继续...")
         input()
 
-        print("\n=== 捕获到的 API 请求 ===")
+        keywords = ["download", "record", "list", "page", "enterprise", "model",
+                    "detail", "privilege", "member", "gold", "coin", "order"]
+        print("\n=== 可疑 API 请求（匹配关键词）===")
+        seen_kw = set()
+        for req in captured:
+            url = req["url"]
+            if any(kw in url.lower() for kw in keywords):
+                if url not in seen_kw:
+                    seen_kw.add(url)
+                    print(f"  {req['method']} {url}")
+
+        print("\n=== 全部 XHR/Fetch 请求 ===")
         seen = set()
         for req in captured:
             if req["url"] not in seen:
@@ -45,7 +63,7 @@ def discover_apis():
                 print(f"  {req['method']} {req['url']}")
 
         browser.close()
-        print("\n请将上面可疑的 API 端点记下来，用于后续配置 downloader.py")
+        print(f"\n共捕获 {len(captured)} 个请求。请将可疑 API 端点记下来。")
 
 
 if __name__ == "__main__":
