@@ -36,3 +36,14 @@ def test_pet_widget_transparent(qapp):
     """PetWidget should have transparent background attribute."""
     widget = PetWidget()
     assert widget.testAttribute(Qt.WA_TranslucentBackground)
+
+
+def test_pet_window_flags(qapp):
+    """PetWindow should be frameless, transparent, always-on-top, and skip taskbar."""
+    from pet import PetWindow
+    window = PetWindow()
+    flags = window.windowFlags()
+    assert flags & Qt.FramelessWindowHint
+    assert flags & Qt.WindowStaysOnTopHint
+    assert flags & Qt.Tool
+    assert window.testAttribute(Qt.WA_TranslucentBackground)
