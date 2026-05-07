@@ -53,7 +53,7 @@ class PetWidget(QWidget):
             SIZE // 3,
             SIZE // 4,
         )
-        painter.drawArc(mouth_rect, 0, 180 * 16)  # 180 degrees = smile
+        painter.drawArc(mouth_rect, 0, -180 * 16)  # 180 degrees clockwise = smile (lower half)
 
 
 class PetWindow(QMainWindow):
@@ -86,7 +86,7 @@ class PetWindow(QMainWindow):
             event.accept()
 
     def mouseMoveEvent(self, event):
-        if event.buttons() == Qt.LeftButton and self._drag_pos is not None:
+        if event.buttons() & Qt.LeftButton and self._drag_pos is not None:
             self.move(event.globalPos() - self._drag_pos)
             event.accept()
 
