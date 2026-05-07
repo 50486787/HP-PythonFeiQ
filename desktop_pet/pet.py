@@ -1,7 +1,7 @@
 """Windows 11 Desktop Pet - a simple smiley face that lives on your desktop."""
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QSystemTrayIcon, QMenu, QAction
-from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QFont, QIcon
+from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtGui import QPainter, QColor, QPen, QBrush
 from PyQt5.QtCore import Qt, QPoint, QRectF
 
 SIZE = 128
@@ -54,5 +54,3 @@ class PetWidget(QWidget):
             SIZE // 4,
         )
         painter.drawArc(mouth_rect, 0, 180 * 16)  # 180 degrees = smile
-
-        painter.end()

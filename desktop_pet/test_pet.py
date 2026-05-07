@@ -2,48 +2,37 @@
 import os
 import sys
 
+import pytest
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication
 
-def test_pyqt5_available():
-    """PyQt5 should be installed and importable."""
-    from PyQt5.QtWidgets import QApplication
+from pet import PetWidget
 
 
-def test_app_instantiation():
-    """QApplication can be created without a display (headless)."""
+@pytest.fixture(scope="session")
+def qapp():
+    """Session-scoped QApplication for headless testing."""
     os.environ["QT_QPA_PLATFORM"] = "offscreen"
-    from PyQt5.QtWidgets import QApplication
     app = QApplication.instance()
     if app is None:
         app = QApplication(sys.argv)
-    assert app is not None
+    yield app
     app.quit()
 
 
-def test_pet_widget_creation():
+def test_app_instantiation(qapp):
+    """QApplication can be created without a display (headless)."""
+    assert qapp is not None
+
+
+def test_pet_widget_creation(qapp):
     """PetWidget should be creatable and have correct size."""
-    import os
-    os.environ["QT_QPA_PLATFORM"] = "offscreen"
-    from PyQt5.QtWidgets import QApplication
-    app = QApplication.instance()
-    if app is None:
-        app = QApplication(sys.argv)
-    from pet import PetWidget
     widget = PetWidget()
     assert widget.width() == 128
     assert widget.height() == 128
-    app.quit()
 
 
-def test_pet_widget_transparent():
+def test_pet_widget_transparent(qapp):
     """PetWidget should have transparent background attribute."""
-    import os
-    os.environ["QT_QPA_PLATFORM"] = "offscreen"
-    from PyQt5.QtWidgets import QApplication
-    from PyQt5.QtCore import Qt
-    app = QApplication.instance()
-    if app is None:
-        app = QApplication(sys.argv)
-    from pet import PetWidget
     widget = PetWidget()
     assert widget.testAttribute(Qt.WA_TranslucentBackground)
-    app.quit()
