@@ -2,7 +2,7 @@
 import sys
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QMainWindow,
-    QSystemTrayIcon, QMenu, QAction,
+    QSystemTrayIcon, QMenu, QAction, QStyle,
 )
 from PyQt5.QtGui import QPainter, QColor, QPen, QBrush
 from PyQt5.QtCore import Qt, QPoint, QRectF
@@ -18,7 +18,7 @@ class PetWidget(QWidget):
         self.setFixedSize(SIZE, SIZE)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
-    def paintEvent(self, event):
+    def paintEvent(self, _event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
@@ -108,9 +108,9 @@ def main():
     # System tray
     tray = QSystemTrayIcon(window)
     # Use a standard icon as fallback
-    tray.setIcon(app.style().standardIcon(app.style().SP_ComputerIcon))
+    tray.setIcon(app.style().standardIcon(QStyle.SP_ComputerIcon))
 
-    tray_menu = QMenu()
+    tray_menu = QMenu(window)
     exit_action = QAction("退出", tray_menu)
     exit_action.triggered.connect(app.quit)
     tray_menu.addAction(exit_action)
