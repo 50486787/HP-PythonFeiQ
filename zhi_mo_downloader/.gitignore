@@ -1,6 +1,7 @@
+﻿__pycache__/
 downloads/
-*.db
-config_local.py
-__pycache__/
-*.pyc
-.env
+downloads.db
+*.html
+个人中心*/
+backup/
+.superpowers/
