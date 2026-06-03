@@ -50,10 +50,10 @@ QTreeWidget {
     background: #faf9f6;
     border: none;
     outline: none;
-    font-size: 12px;
+    font-size: 13px;
 }
 QTreeWidget::item {
-    padding: 6px 12px;
+    padding: 7px 14px;
     border: none;
 }
 QTreeWidget::item:selected {
@@ -68,24 +68,24 @@ QSplitter::handle {
     width: 1px;
 }
 QScrollBar:vertical {
-    width: 6px;
+    width: 8px;
     background: transparent;
 }
 QScrollBar::handle:vertical {
     background: #d0d0d0;
-    border-radius: 3px;
+    border-radius: 4px;
     min-height: 30px;
 }
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
     height: 0;
 }
 QScrollBar:horizontal {
-    height: 6px;
+    height: 8px;
     background: transparent;
 }
 QScrollBar::handle:horizontal {
     background: #d0d0d0;
-    border-radius: 3px;
+    border-radius: 4px;
     min-width: 30px;
 }
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
@@ -94,8 +94,8 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
 QTextEdit {
     border: 1px solid #d8d4cc;
     border-radius: 4px;
-    padding: 6px 10px;
-    font-size: 12px;
+    padding: 7px 12px;
+    font-size: 13px;
     background: #fff;
 }
 QPushButton#btnSend {
@@ -103,7 +103,8 @@ QPushButton#btnSend {
     color: #fff;
     border: none;
     border-radius: 3px;
-    padding: 6px 20px;
+    padding: 7px 24px;
+    font-size: 13px;
     font-weight: bold;
 }
 QPushButton#btnSend:hover {
@@ -112,7 +113,7 @@ QPushButton#btnSend:hover {
 QLineEdit {
     border: 1px solid #d8d4cc;
     border-radius: 3px;
-    padding: 4px 8px;
-    font-size: 12px;
+    padding: 5px 10px;
+    font-size: 13px;
 }
 """

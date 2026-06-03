@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QListView, QTextEdit,
     QPushButton, QFileDialog, QStyledItemDelegate
 )
-from PyQt5.QtCore import pyqtSignal, Qt, QSize, QRect
+from PyQt5.QtCore import pyqtSignal, Qt, QSize, QRect, QRectF
 from PyQt5.QtGui import (
     QFont, QPainter, QPainterPath, QTextDocument, QPen, QBrush,
     QColor, QStandardItemModel, QStandardItem, QPalette
@@ -61,8 +61,8 @@ class BubbleDelegate(QStyledItemDelegate):
         # 绘制气泡背景
         path = QPainterPath()
         path.addRoundedRect(
-            QRect(0, 0, bubble_w, int(bubble_h)).translated(bubble_rect.topLeft()),
-            8, 8)
+            QRectF(0, 0, float(bubble_w), float(bubble_h)).translated(bubble_rect.topLeft()),
+            8.0, 8.0)
 
         if is_self:
             painter.fillPath(path, QColor(BUBBLE_SELF_BG))
@@ -156,11 +156,6 @@ class ChatView(QWidget):
         btn_batch.setStyleSheet(btn_style)
         btn_batch.clicked.connect(self._on_batch_send)
         toolbar.addWidget(btn_batch)
-
-        btn_image = QPushButton('📷 发送图片')
-        btn_image.setStyleSheet(btn_style)
-        btn_image.clicked.connect(self._on_send_image)
-        toolbar.addWidget(btn_image)
 
         toolbar.addStretch()
         layout.addLayout(toolbar)

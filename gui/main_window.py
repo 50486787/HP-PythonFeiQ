@@ -11,9 +11,7 @@ from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QIcon, QPixmap, QPainter, QBrush, QColor, QFont, QPen
 
 from gui.models import ContactItem, ChatMessage
-from gui.resources import (
-    HEADER_START, HEADER_END, HEADER_TEXT, MAIN_QSS, format_size
-)
+from gui.resources import MAIN_QSS, format_size
 from gui.contact_panel import ContactPanel
 from gui.chat_view import ChatView
 from gui.settings_dialog import SettingsDialog, load_settings
@@ -30,10 +28,10 @@ class MainWindow(QMainWindow):
     _contentSignal = pyqtSignal(object)    # PacketContent 对象
     _fileRecvSignal = pyqtSignal(str, int, int, object)  # name, size, type, result_queue
 
-    def __init__(self):
+    def __init__(self, width=1100, height=700):
         super().__init__()
         self.setWindowTitle('HP-PythonFeiQ v0.7')
-        self.resize(1100, 700)
+        self.resize(width, height)
         self.setMinimumSize(760, 480)
         self.setStyleSheet(MAIN_QSS)
 
@@ -59,9 +57,6 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        # === 顶栏 ===
-        self._build_header(layout)
-
         # === 主体：左侧联系人 + 右侧聊天 ===
         splitter = QSplitter(Qt.Horizontal)
         splitter.setHandleWidth(1)
@@ -77,12 +72,30 @@ class MainWindow(QMainWindow):
         right_layout.setContentsMargins(0, 0, 0, 0)
         right_layout.setSpacing(0)
 
-        # 聊天标题栏
+        # 聊天标题栏（含设置按钮）
+        title_bar = QWidget()
+        title_bar.setStyleSheet(
+            'QWidget { border-bottom: 1px solid #e8e4dc; background: #fafaf8; }')
+        tb_layout = QHBoxLayout(title_bar)
+        tb_layout.setContentsMargins(14, 8, 8, 8)
+
         self.chat_title = QLabel('欢迎使用 HP-PythonFeiQ')
         self.chat_title.setStyleSheet(
-            'QLabel { padding: 8px 14px; border-bottom: 1px solid #e8e4dc;'
-            'font-size: 12px; font-weight: bold; color: #666; background: #fafaf8; }')
-        right_layout.addWidget(self.chat_title)
+            'QLabel { font-size: 13px; font-weight: bold; color: #666;'
+            'background: transparent; border: none; }')
+        tb_layout.addWidget(self.chat_title)
+        tb_layout.addStretch()
+
+        btn_settings = QPushButton('⚙ 设置')
+        btn_settings.setCursor(Qt.PointingHandCursor)
+        btn_settings.setStyleSheet(
+            'QPushButton { padding: 3px 10px; border: 1px solid #d8d4cc;'
+            'border-radius: 3px; background: #fff; font-size: 11px; color: #666; }'
+            'QPushButton:hover { background: #f0f0f0; }')
+        btn_settings.clicked.connect(self._on_open_settings)
+        tb_layout.addWidget(btn_settings)
+
+        right_layout.addWidget(title_bar)
 
         self.chat_view = ChatView()
         self.chat_view.sendMessage.connect(self._on_send_message)
@@ -93,46 +106,8 @@ class MainWindow(QMainWindow):
         right_layout.addWidget(self.chat_view, 1)
 
         splitter.addWidget(right)
-        splitter.setSizes([220, 880])
+        splitter.setSizes([240, 860])
         layout.addWidget(splitter, 1)
-
-    def _build_header(self, parent_layout):
-        """浓橙渐变顶栏 32px"""
-        header = QWidget()
-        header.setFixedHeight(32)
-        header.setStyleSheet(
-            'QWidget { background: qlineargradient(x1:0, y1:0, x2:0, y2:1,'
-            'stop:0 %s, stop:1 %s); }' % (HEADER_START, HEADER_END))
-        h_layout = QHBoxLayout(header)
-        h_layout.setContentsMargins(12, 0, 8, 0)
-        h_layout.setSpacing(4)
-
-        title = QLabel('HP-PythonFeiQ')
-        title.setStyleSheet(
-            'QLabel { color: %s; font-size: 12px; font-weight: bold;'
-            'background: transparent; }' % HEADER_TEXT)
-        h_layout.addWidget(title)
-
-        h_layout.addStretch()
-
-        # 当前用户名
-        self.lbl_username = QLabel('')
-        self.lbl_username.setStyleSheet(
-            'QLabel { color: %s; font-size: 11px;'
-            'background: transparent; opacity: 0.85; }' % HEADER_TEXT)
-        h_layout.addWidget(self.lbl_username)
-
-        # 设置按钮
-        btn_settings = QPushButton('⚙')
-        btn_settings.setFixedSize(24, 24)
-        btn_settings.setStyleSheet(
-            'QPushButton { color: %s; background: transparent; border: none;'
-            'font-size: 14px; }'
-            'QPushButton:hover { color: #fff; }' % HEADER_TEXT)
-        btn_settings.clicked.connect(self._on_open_settings)
-        h_layout.addWidget(btn_settings)
-
-        parent_layout.addWidget(header)
 
     def _connect_signals(self):
         self._userSignal.connect(self._on_user_update)
@@ -199,10 +174,6 @@ class MainWindow(QMainWindow):
         dlg = SettingsDialog(self)
         if dlg.exec_():
             self._settings = load_settings()
-            # 更新顶栏用户名
-            nickname = self._settings.get('nickname', '')
-            if nickname:
-                self.lbl_username.setText(nickname)
 
     # ==================== 联系人交互 ====================
 
@@ -261,39 +232,49 @@ class MainWindow(QMainWindow):
     def _on_content_recv(self, content):
         """收到消息（主线程）"""
         if content.type == ContentType.TEXT:
-            msg = ChatMessage(
-                peer_id=str(content.peer),
-                text=content.text,
-                is_send=content.tx,
-                time=content.time,
-            )
-            # 保存到消息存储
-            if content.peer not in self._msg_store:
-                self._msg_store[content.peer] = []
-            self._msg_store[content.peer].append(msg)
+            text = content.text
+            preview = content.text[:30]
+        elif content.type == ContentType.FILE:
+            fname = getattr(content, 'filename', '')
+            fsize = getattr(content, 'file_size', 0)
+            text = f'[收到文件] {fname} ({format_size(fsize)})'
+            preview = f'[文件] {fname}'
+        else:
+            return  # UNKNOWN / KNOCK 等暂不显示
 
-            # 当前选中用户 → 实时显示
-            if self._current_user_id and str(content.peer) == self._current_user_id:
-                self.chat_view.add_message(msg)
+        msg = ChatMessage(
+            peer_id=str(content.peer),
+            text=text,
+            is_send=False,
+            time=content.time,
+        )
+        # 保存到消息存储
+        if content.peer not in self._msg_store:
+            self._msg_store[content.peer] = []
+        self._msg_store[content.peer].append(msg)
 
-            # 更新联系人预览
-            user = self._users.get(str(content.peer))
-            if user:
-                self.contact_panel.upsert_contact(
-                    str(content.peer),
-                    user.nickname,
-                    user.groupname,
-                    True,
-                    content.text[:30])
+        # 当前选中用户 → 实时显示
+        if self._current_user_id and str(content.peer) == self._current_user_id:
+            self.chat_view.add_message(msg)
 
-            # 窗口未激活时托盘闪烁提示
-            if not self.isActiveWindow():
-                name = user.nickname if user else str(content.peer)
-                self._tray.showMessage(
-                    name,
-                    content.text[:50],
-                    QSystemTrayIcon.Information,
-                    3000)
+        # 更新联系人预览
+        user = self._users.get(str(content.peer))
+        if user:
+            self.contact_panel.upsert_contact(
+                str(content.peer),
+                user.nickname,
+                user.groupname,
+                True,
+                preview)
+
+        # 窗口未激活时托盘闪烁提示
+        if not self.isActiveWindow():
+            name = user.nickname if user else str(content.peer)
+            self._tray.showMessage(
+                name,
+                text[:50],
+                QSystemTrayIcon.Information,
+                3000)
 
     # ==================== 用户状态 ====================
 
@@ -323,16 +304,33 @@ class MainWindow(QMainWindow):
     def _on_send_file_signal(self, path: str):
         peer = self._guard_user()
         if peer:
+            fname = os.path.basename(path)
+            fsize = os.path.getsize(path)
+            msg = ChatMessage(peer_id=peer, text=f'[发送文件] {fname} ({format_size(fsize)})',
+                            is_send=True, msg_type='file', file_path=path,
+                            file_name=fname, file_size=fsize)
+            self.chat_view.add_message(msg)
             Instance.sendFile(peer, path)
 
     def _on_send_folder_signal(self, path: str):
         peer = self._guard_user()
         if peer:
+            fname = os.path.basename(path)
+            msg = ChatMessage(peer_id=peer, text=f'[发送文件夹] {fname}',
+                            is_send=True, msg_type='file', file_path=path,
+                            file_name=fname)
+            self.chat_view.add_message(msg)
             Instance.sendFolder(peer, path)
 
     def _on_batch_send_signal(self, paths: list):
         peer = self._guard_user()
         if peer:
+            names = [os.path.basename(p) for p in paths]
+            total = sum(os.path.getsize(p) for p in paths)
+            msg = ChatMessage(peer_id=peer,
+                            text=f'[批量发送] {len(paths)} 个文件 ({format_size(total)})',
+                            is_send=True, msg_type='file')
+            self.chat_view.add_message(msg)
             Instance.sendBatchFiles(peer, paths)
 
     def _on_send_image(self, path: str):
@@ -423,12 +421,27 @@ class MainWindow(QMainWindow):
             return
 
         if len(paths) == 1 and os.path.isfile(paths[0]):
+            fname = os.path.basename(paths[0])
+            fsize = os.path.getsize(paths[0])
+            self.chat_view.add_message(ChatMessage(
+                peer_id=self._current_user_id,
+                text=f'[发送文件] {fname} ({format_size(fsize)})',
+                is_send=True, msg_type='file'))
             Instance.sendFile(self._current_user_id, paths[0])
         elif len(paths) == 1 and os.path.isdir(paths[0]):
+            self.chat_view.add_message(ChatMessage(
+                peer_id=self._current_user_id,
+                text=f'[发送文件夹] {os.path.basename(paths[0])}',
+                is_send=True, msg_type='file'))
             Instance.sendFolder(self._current_user_id, paths[0])
         else:
             files = [p for p in paths if os.path.isfile(p)]
             if files:
+                total = sum(os.path.getsize(p) for p in files)
+                self.chat_view.add_message(ChatMessage(
+                    peer_id=self._current_user_id,
+                    text=f'[批量发送] {len(files)} 个文件 ({format_size(total)})',
+                    is_send=True, msg_type='file'))
                 Instance.sendBatchFiles(self._current_user_id, files)
 
     def _show_drag_overlay(self):

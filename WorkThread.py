@@ -632,6 +632,7 @@ class MainWorkThread(TaskManager):
         self.sendFunc=None
         self._online_peers = set()
         self.file_recv_cb = None  # callback(filename, filesize, filetype) -> (save_path, accepted)
+        self.progress_cb = None   # callback(filename, bytes_done, total_bytes)
 
     #设置内容结束回调函数
     #def setRecvContentCB(self, contentRecvHandler):
@@ -936,6 +937,9 @@ class MainWorkThread(TaskManager):
                                             break
                                         conn.sendall(chunk)
                                         total_sent += len(chunk)
+                                        if self.progress_cb:
+                                            try: self.progress_cb(finfo['filename'], total_sent, filesize)
+                                            except: pass
                                 logger.info('文件发送完成: %s -> %s (%d字节)' % (
                                     finfo['filename'], addr[0], total_sent))
                             except Exception as se:
@@ -1153,12 +1157,18 @@ class MainWorkThread(TaskManager):
                             if not chunk: break
                             f.write(chunk)
                             received += len(chunk)
+                            if self.progress_cb:
+                                try: self.progress_cb(filename, received, file_size)
+                                except: pass
                     else:
                         while received < file_size:
                             chunk = sock.recv(min(8192, file_size - received))
                             if not chunk: break
                             f.write(chunk)
                             received += len(chunk)
+                            if self.progress_cb:
+                                try: self.progress_cb(filename, received, file_size)
+                                except: pass
                 sock.close()
                 if file_type < 2 and received < file_size:
                     logger.error('文件下载不完整: %s (%d/%d字节)' % (filename, received, file_size))
