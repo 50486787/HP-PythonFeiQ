@@ -145,7 +145,7 @@ gui/
 
 ### 未实现 / 有问题 ❌
 
-- [ ] 文字消息接收 — 引擎 blowfish 解密层报 `subsection not found`，旧 GUI 同样存在
+- [x] 文字消息接收 — 已修复：`EncryptTextRecvHandler` 用 `\0` 而非 `:` 定位加密数据边界（v0.7.1）
 - [ ] 头像上传/自定义 — UI 入口已有，逻辑未完成
 - [ ] 图片发送 — 按钮已移除，待后续版本
 - [ ] 文件传输进度条 — 引擎已加 `progress_cb` 钩子，GUI 进度条 UI 待实现
