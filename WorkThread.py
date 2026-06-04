@@ -366,13 +366,17 @@ class EncryptTextRecvHandler(RecvHandler):
         if not raw_extra.startswith(b'20002:'):
             return False
 
-        # 字节级 split: 找前2个冒号后的字段，其余保留
+        # 字节级解析: key_hex : data_hex \0 后续明文
+        # data_hex 以 \0 结束（不是 :），纯文本消息时没有第三个冒号
         colon1 = raw_extra.index(b':', 6)  # 跳过 "20002:"
-        colon2 = raw_extra.index(b':', colon1 + 1)
-        
+        try:
+            null_pos = raw_extra.index(b'\x00', colon1 + 1)
+        except ValueError:
+            null_pos = len(raw_extra)
+
         encrypted_key_hex = raw_extra[6:colon1].decode('ascii').replace('\x00', '')
-        encrypted_data_hex = raw_extra[colon1+1:colon2].decode('ascii').replace('\x00', '')
-        remaining = raw_extra[colon2+1:]  # 字节级保留文件名等
+        encrypted_data_hex = raw_extra[colon1+1:null_pos].decode('ascii').replace('\x00', '')
+        remaining = raw_extra[null_pos+1:]  # 字节级保留文件名等
 
         arrSplit = remaining.decode(IPMSG.ENCODETYPE, errors='replace').rstrip('\0').split(':')
 
