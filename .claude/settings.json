@@ -1,0 +1,53 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"H:\\claude_code\\iGamePet\\hook.py\" off",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"H:\\claude_code\\iGamePet\\hook.py\" working",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "python 'H:\\claude_code\\iGamePet\\hook.py' done; Start-Sleep -Seconds 60; python 'H:\\claude_code\\iGamePet\\hook.py' off",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"H:\\claude_code\\iGamePet\\hook.py\" fail",
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}
